@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Obter Municípios</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-primary {
+            width: 100%; 
+            height: 100%;
+        }
+        .custom-card {
+            min-height: 100px; 
+        }
+        .custom-card .card-body {
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Municípios por Estado</h1>
+        <div class="row mb-4 justify-content-center">
+            {% for estado in estados %}
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+                    <button type="button" class="btn btn-primary fetchMunicipiosLink" data-sigla="{{ estado.sigla }}">
+                        {{ estado.nome }}
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="responseContainer" class="row">
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.querySelectorAll('.fetchMunicipiosLink').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); 
+                let uf_sigla = this.getAttribute('data-sigla');
+                fetch(`http://127.0.0.1:8000/api/municipios/?uf_sigla=${uf_sigla}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let container = document.getElementById('responseContainer');
+                        container.innerHTML = ''; 
+                        if (data.length === 0) {
+                            let p = document.createElement('p');
+                            p.className = 'col-12 text-center text-muted';
+                            p.textContent = 'Nenhum município encontrado para este estado.';
+                            container.appendChild(p);
+                        } else {
+                            data.forEach(municipio => {
+                                let col = document.createElement('div');
+                                col.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-3';
+                                let card = document.createElement('div');
+                                card.className = 'card custom-card';
+                                let cardBody = document.createElement('div');
+                                cardBody.className = 'card-body';
+                                cardBody.innerHTML = `<h5 class="card-title">${municipio.nome}</h5>`;
+                                card.appendChild(cardBody);
+                                col.appendChild(card);
+                                container.appendChild(col);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Erro:', error));
+            });
+        });
+    </script>
+</body>
+</html>
